@@ -4,17 +4,17 @@ from agents.backend_agent import BackEndAgent
 from agents.database_agent import DatabaseAgent
 from agents.testing_agent import TestingAgent
 from agents.optimization_agent import OptimizationAgent
+from utils.communication import CommunicationChannel
 import os
 
 class TeamLeader:
-    def __init__(self):
-        # Initialize specialized agents
+    def __init__(self, communication_channel: CommunicationChannel):
         self.agents = {
-            'frontend': FrontEndAgent(),
-            'backend': BackEndAgent(),
-            'database': DatabaseAgent(),
-            'testing': TestingAgent(),
-            'optimization': OptimizationAgent()
+            'frontend': FrontEndAgent(communication_channel),
+            'backend': BackEndAgent(communication_channel),
+            'database': DatabaseAgent(communication_channel),
+            'testing': TestingAgent(communication_channel),
+            'optimization': OptimizationAgent(communication_channel)
         }
         # Initialize a project log list to record progress
         self.project_log = []
@@ -31,18 +31,42 @@ class TeamLeader:
 
     def break_down_tasks(self, requirements):
         """
-        Break down project requirements into specific tasks for each agent.
+        Dynamically break down project requirements into specific tasks for each agent.
         """
-        # Placeholder task breakdown (customize as needed)
         tasks = {
-            'frontend': ["Design UI", "Develop HTML/CSS/JS"],
-            'backend': ["Develop API", "Integrate Database"],
-            'database': ["Set up Database", "Design Schema"],
-            'testing': ["Unit Tests", "Integration Tests"],
-            'optimization': ["Optimize Performance", "Code Review"]
+            'frontend': [],
+            'backend': [],
+            'database': [],
+            'testing': [],
+            'optimization': []
         }
-        self.project_log.append("Task breakdown complete.")
-        print("Team Leader: Task breakdown complete.")
+        
+        # Convert requirements to lowercase for case-insensitive matching
+        requirements = requirements.lower()
+        
+        # Analyze keywords and dynamically assign tasks
+        if "ui" in requirements or "frontend" in requirements or "user interface" in requirements:
+            tasks['frontend'].extend(["Design UI", "Develop HTML/CSS/JS"])
+        
+        if "api" in requirements or "backend" in requirements or "server" in requirements:
+            tasks['backend'].extend(["Develop API"])
+        
+        if "database" in requirements or "data storage" in requirements:
+            tasks['database'].extend(["Set up Database", "Design Schema"])
+        
+        if "testing" in requirements or "quality assurance" in requirements or "qa" in requirements:
+            tasks['testing'].extend(["Unit Tests", "Integration Tests"])
+        
+        if "optimization" in requirements or "performance" in requirements or "speed" in requirements:
+            tasks['optimization'].extend(["Optimize Performance", "Code Review"])
+        
+        if "authentication" in requirements or "login" in requirements or "user authentication" in requirements:
+            tasks['backend'].append("Implement Authentication")
+
+        # Logging for debugging purposes
+        self.project_log.append("Dynamic task breakdown complete based on requirements.")
+        print(f"Team Leader: Task breakdown - {tasks}")
+        
         return tasks
 
     def assign_tasks(self, tasks):

@@ -1,8 +1,13 @@
 # collaborative_ai_team/agents/optimization_agent.py
+from utils.communication import CommunicationChannel
 
 class OptimizationAgent:
-    def __init__(self):
+    def __init__(self, communication_channel: CommunicationChannel):
         self.tasks = []
+        self.communication_channel = communication_channel
+        
+        # Subscribe to backend agent updates
+        self.communication_channel.subscribe('backend', self.handle_backend_update)
 
     def execute_tasks(self, tasks, team_leader):
         """
@@ -31,6 +36,9 @@ class OptimizationAgent:
         """
         result = "OptimizationAgent: Code review completed with suggestions."
         team_leader.update_project_log(result)
+
+    def handle_backend_update(self, message):
+        print(f"FrontEndAgent received update from Backend: {message}")
 
     def unknown_task(self, task, team_leader):
         """
