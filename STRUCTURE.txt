@@ -1,0 +1,25 @@
+IntelliCode-Engineering-Team/
+    README.md
+    main.py
+    logs/
+        project_log.txt
+    agents/
+        testing_agent.py
+        __init__.py
+        frontend_agent.py
+        optimization_agent.py
+        database_agent.py
+        backend_agent.py
+        logs/
+            project_log.txt
+    utils/
+        __init__.py
+        communication.py
+    tasks/
+        task_manager.py
+        __init__.py
+    tests/
+        test_project.py
+    project_management/
+        __init__.py
+        team_leader.py

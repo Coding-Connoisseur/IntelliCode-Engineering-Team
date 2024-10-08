@@ -1,32 +1,28 @@
 import os
 
-def generate_readme(directory, output_file="../STRUCTURE.md"):
+def generate_structure(directory, output_file):
     with open(output_file, 'w') as outfile:
-        outfile.write("# Project Directory Structure\n\n")
-        outfile.write("This README contains the file structure of the project.\n\n")
-        outfile.write("```\n")
-        
+        # Start from the root directory and traverse
         for root, dirs, files in os.walk(directory):
-            # Ignore directories that start with '__' or are hidden (dot directories)
-            dirs[:] = [d for d in dirs if not d.startswith('__') and not d.startswith('.')]
-            
-            # Calculate indentation level based on directory depth
+            # Calculate the relative indentation level based on the root directory
             level = root.replace(directory, '').count(os.sep)
-            indent = ' ' * 4 * level
-            relative_root = os.path.relpath(root, directory)
-            
-            if relative_root != '.':
-                outfile.write(f"{indent}{os.path.basename(root)}/\n")
+            indent = '    ' * level  # Each level of indentation is 4 spaces
 
+            # Get the folder name and write it to the file
+            folder_name = os.path.basename(root) or directory
+            outfile.write(f"{indent}{folder_name}/\n")
+
+            # Filter out ignored directories and files
+            dirs[:] = [d for d in dirs if not d.startswith('__') and not d.startswith('.') and not d.startswith('z')]
+            files = [f for f in files if not f.startswith('.') and not f.startswith('create') and not f.startswith('unpack') and not f.startswith('STRUCTURE')]
+
+            # Write each file in the directory
             for file in files:
-                # Ignore dot files (hidden files)
-                if file.startswith('.'):
-                    continue
                 outfile.write(f"{indent}    {file}\n")
 
-        outfile.write("```\n")
-
 if __name__ == "__main__":
-    directory = os.getcwd()  # Set directory to the root directory the script is run from
-    generate_readme(directory)
-    print("README.md has been created with the directory structure.")
+    # Set the directory to the current directory
+    directory = os.getcwd()
+    output_file = "STRUCTURE.txt"
+    generate_structure(directory, output_file)
+    print(f"The file structure has been saved to {output_file}.")
