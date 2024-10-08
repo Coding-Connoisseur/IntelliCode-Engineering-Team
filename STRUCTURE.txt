@@ -1,6 +1,7 @@
 IntelliCode-Engineering-Team/
     README.md
     main.py
+    Project_Overview.txt
     logs/
         project_log.txt
     agents/

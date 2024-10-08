@@ -27,15 +27,20 @@ This project simulates a collaborative AI team consisting of a Team Leader and s
 # collaborative_ai_team/main.py
 
 from project_management.team_leader import TeamLeader
+from utils.communication import CommunicationChannel
+
 
 def main():
-    # Initialize the Team Leader
-    team_leader = TeamLeader()
+    # Initialize the communication channel
+    communication_channel = CommunicationChannel()
+    
+    # Initialize the Team Leader and pass the communication channel to agents
+    team_leader = TeamLeader(communication_channel)
     
     # Define project requirements
-    requirements = "A web application project requiring front-end, back-end, database, testing, and optimization."
-    
+    requirements = "This project involves a user interface, backend API development, server-side logic, database integration, authentication for login, and performance optimization."    
     # Start the project analysis and task execution
+    
     team_leader.analyze_project(requirements)
     
     # Save the log after completion
@@ -55,16 +60,35 @@ if __name__ == "__main__":
 
 --- File: logs/project_log.txt ---
 
+Analyzing project requirements...
+Dynamic task breakdown complete based on requirements.
+Assigning tasks to frontend agent...
+FrontEndAgent: UI design completed.
+FrontEndAgent: HTML, CSS, and JS development completed.
+Assigning tasks to backend agent...
+Assigning tasks to database agent...
+DatabaseAgent: Database setup completed.
+DatabaseAgent: Database schema design completed.
+Assigning tasks to testing agent...
+Assigning tasks to optimization agent...
+OptimizationAgent: Performance optimization completed.
+OptimizationAgent: Code review completed with suggestions.
 
 
 
 --- File: agents/testing_agent.py ---
 
 # collaborative_ai_team/agents/testing_agent.py
+from utils.communication import CommunicationChannel
+import unittest
 
 class TestingAgent:
-    def __init__(self):
+    def __init__(self, communication_channel: CommunicationChannel):
         self.tasks = []
+        self.communication_channel = communication_channel
+        
+        # Subscribe to backend agent updates
+        self.communication_channel.subscribe('backend', self.handle_backend_update)
 
     def execute_tasks(self, tasks, team_leader):
         """
@@ -81,11 +105,11 @@ class TestingAgent:
                 self.unknown_task(task, team_leader)
 
     def run_unit_tests(self, team_leader):
-        """
-        Simulate running unit tests.
-        """
-        result = "TestingAgent: Unit tests completed successfully."
-        team_leader.update_project_log(result)
+        suite = unittest.TestLoader().discover('tests')
+        result = unittest.TextTestRunner().run(suite)
+        result_summary = f"TestingAgent: Unit tests completed with {len(result.failures)} failures."
+        team_leader.update_project_log(result_summary)
+
 
     def run_integration_tests(self, team_leader):
         """
@@ -93,6 +117,9 @@ class TestingAgent:
         """
         result = "TestingAgent: Integration tests completed successfully."
         team_leader.update_project_log(result)
+
+    def handle_backend_update(self, message):
+        print(f"FrontEndAgent received update from Backend: {message}")
 
     def unknown_task(self, task, team_leader):
         """
@@ -112,9 +139,16 @@ class TestingAgent:
 
 # collaborative_ai_team/agents/frontend_agent.py
 
+from utils.communication import CommunicationChannel
+
+
 class FrontEndAgent:
-    def __init__(self):
+    def __init__(self, communication_channel: CommunicationChannel):
         self.tasks = []
+        self.communication_channel = communication_channel
+        
+        # Subscribe to backend agent updates
+        self.communication_channel.subscribe('backend', self.handle_backend_update)
 
     def execute_tasks(self, tasks, team_leader):
         """
@@ -122,11 +156,13 @@ class FrontEndAgent:
         """
         self.tasks = tasks
         for task in self.tasks:
-            # Placeholder logic for each task
+            # Check for each task and call the appropriate method
             if task == "Design UI":
                 self.design_ui(team_leader)
             elif task == "Develop HTML/CSS/JS":
                 self.develop_html_css_js(team_leader)
+            elif task == "Design User Interface":
+                self.design_user_interface(team_leader)
             else:
                 self.unknown_task(task, team_leader)
 
@@ -144,6 +180,13 @@ class FrontEndAgent:
         result = "FrontEndAgent: HTML, CSS, and JS development completed."
         team_leader.update_project_log(result)
 
+    def design_user_interface(self, team_leader):
+        """
+        Simulate user interface design.
+        """
+        result = "FrontEndAgent: User Interface design completed."
+        team_leader.update_project_log(result)
+
     def unknown_task(self, task, team_leader):
         """
         Handle unknown tasks.
@@ -151,15 +194,23 @@ class FrontEndAgent:
         result = f"FrontEndAgent: Unknown task '{task}' - no action taken."
         team_leader.update_project_log(result)
 
+    def handle_backend_update(self, message):
+        print(f"FrontEndAgent received update from Backend: {message}")
+
 
 
 --- File: agents/optimization_agent.py ---
 
 # collaborative_ai_team/agents/optimization_agent.py
+from utils.communication import CommunicationChannel
 
 class OptimizationAgent:
-    def __init__(self):
+    def __init__(self, communication_channel: CommunicationChannel):
         self.tasks = []
+        self.communication_channel = communication_channel
+        
+        # Subscribe to backend agent updates
+        self.communication_channel.subscribe('backend', self.handle_backend_update)
 
     def execute_tasks(self, tasks, team_leader):
         """
@@ -189,6 +240,9 @@ class OptimizationAgent:
         result = "OptimizationAgent: Code review completed with suggestions."
         team_leader.update_project_log(result)
 
+    def handle_backend_update(self, message):
+        print(f"FrontEndAgent received update from Backend: {message}")
+
     def unknown_task(self, task, team_leader):
         """
         Handle unknown tasks.
@@ -201,10 +255,15 @@ class OptimizationAgent:
 --- File: agents/database_agent.py ---
 
 # collaborative_ai_team/agents/database_agent.py
+from utils.communication import CommunicationChannel
 
 class DatabaseAgent:
-    def __init__(self):
+    def __init__(self, communication_channel: CommunicationChannel):
         self.tasks = []
+        self.communication_channel = communication_channel
+        
+        # Subscribe to backend agent updates
+        self.communication_channel.subscribe('backend', self.handle_backend_update)
 
     def execute_tasks(self, tasks, team_leader):
         """
@@ -234,6 +293,9 @@ class DatabaseAgent:
         result = "DatabaseAgent: Database schema design completed."
         team_leader.update_project_log(result)
 
+    def handle_backend_update(self, message):
+        print(f"FrontEndAgent received update from Backend: {message}")
+
     def unknown_task(self, task, team_leader):
         """
         Handle unknown tasks.
@@ -246,24 +308,32 @@ class DatabaseAgent:
 --- File: agents/backend_agent.py ---
 
 # collaborative_ai_team/agents/backend_agent.py
+from utils.communication import CommunicationChannel
+
 
 class BackEndAgent:
-    def __init__(self):
+    def __init__(self, communication_channel: CommunicationChannel):
         self.tasks = []
+        self.communication_channel = communication_channel
+        
+        # Subscribe to backend agent updates
+        self.communication_channel.subscribe('backend', self.handle_backend_update)
 
+# In backend_agent.py
     def execute_tasks(self, tasks, team_leader):
-        """
-        Execute assigned back-end tasks and update the team leader on progress.
-        """
-        self.tasks = tasks
         for task in self.tasks:
-            # Placeholder logic for each task
-            if task == "Develop API":
-                self.develop_api(team_leader)
-            elif task == "Integrate Database":
-                self.integrate_database(team_leader)
-            else:
-                self.unknown_task(task, team_leader)
+            try:
+                if task == "Develop API":
+                    self.develop_api(team_leader)
+                elif task == "Integrate Database":
+                    self.integrate_database(team_leader)
+                else:
+                    self.unknown_task(task, team_leader)
+            except Exception as e:
+                error_message = f"BackEndAgent: Error executing task '{task}': {e}"
+                team_leader.update_project_log(error_message)
+                print(error_message)  # For real-time error tracking
+
 
     def develop_api(self, team_leader):
         """
@@ -279,6 +349,9 @@ class BackEndAgent:
         result = "BackEndAgent: Database integration completed."
         team_leader.update_project_log(result)
 
+    def handle_backend_update(self, message):
+        print(f"FrontEndAgent received update from Backend: {message}")
+
     def unknown_task(self, task, team_leader):
         """
         Handle unknown tasks.
@@ -290,23 +363,6 @@ class BackEndAgent:
 
 --- File: agents/logs/project_log.txt ---
 
-Analyzing project requirements...
-Task breakdown complete.
-Assigning tasks to frontend agent...
-FrontEndAgent: UI design completed.
-FrontEndAgent: HTML, CSS, and JS development completed.
-Assigning tasks to backend agent...
-BackEndAgent: API development completed.
-BackEndAgent: Database integration completed.
-Assigning tasks to database agent...
-DatabaseAgent: Database setup completed.
-DatabaseAgent: Database schema design completed.
-Assigning tasks to testing agent...
-TestingAgent: Unit tests completed successfully.
-TestingAgent: Integration tests completed successfully.
-Assigning tasks to optimization agent...
-OptimizationAgent: Performance optimization completed.
-OptimizationAgent: Code review completed with suggestions.
 
 
 
@@ -317,6 +373,28 @@ OptimizationAgent: Code review completed with suggestions.
 
 --- File: utils/communication.py ---
 
+# collaborative_ai_team/utils/communication.py
+
+class CommunicationChannel:
+    def __init__(self):
+        # Stores subscriptions where keys are agent names, and values are lists of callback functions
+        self.subscriptions = {}
+
+    def subscribe(self, agent_name, callback):
+        """
+        Subscribe to updates from a specific agent.
+        """
+        if agent_name not in self.subscriptions:
+            self.subscriptions[agent_name] = []
+        self.subscriptions[agent_name].append(callback)
+
+    def publish(self, agent_name, message):
+        """
+        Publish a message to all subscribers of a specific agent.
+        """
+        if agent_name in self.subscriptions:
+            for callback in self.subscriptions[agent_name]:
+                callback(message)
 
 
 
@@ -348,17 +426,17 @@ from agents.backend_agent import BackEndAgent
 from agents.database_agent import DatabaseAgent
 from agents.testing_agent import TestingAgent
 from agents.optimization_agent import OptimizationAgent
+from utils.communication import CommunicationChannel
 import os
 
 class TeamLeader:
-    def __init__(self):
-        # Initialize specialized agents
+    def __init__(self, communication_channel: CommunicationChannel):
         self.agents = {
-            'frontend': FrontEndAgent(),
-            'backend': BackEndAgent(),
-            'database': DatabaseAgent(),
-            'testing': TestingAgent(),
-            'optimization': OptimizationAgent()
+            'frontend': FrontEndAgent(communication_channel),
+            'backend': BackEndAgent(communication_channel),
+            'database': DatabaseAgent(communication_channel),
+            'testing': TestingAgent(communication_channel),
+            'optimization': OptimizationAgent(communication_channel)
         }
         # Initialize a project log list to record progress
         self.project_log = []
@@ -375,18 +453,42 @@ class TeamLeader:
 
     def break_down_tasks(self, requirements):
         """
-        Break down project requirements into specific tasks for each agent.
+        Dynamically break down project requirements into specific tasks for each agent.
         """
-        # Placeholder task breakdown (customize as needed)
         tasks = {
-            'frontend': ["Design UI", "Develop HTML/CSS/JS"],
-            'backend': ["Develop API", "Integrate Database"],
-            'database': ["Set up Database", "Design Schema"],
-            'testing': ["Unit Tests", "Integration Tests"],
-            'optimization': ["Optimize Performance", "Code Review"]
+            'frontend': [],
+            'backend': [],
+            'database': [],
+            'testing': [],
+            'optimization': []
         }
-        self.project_log.append("Task breakdown complete.")
-        print("Team Leader: Task breakdown complete.")
+        
+        # Convert requirements to lowercase for case-insensitive matching
+        requirements = requirements.lower()
+        
+        # Analyze keywords and dynamically assign tasks
+        if "ui" in requirements or "frontend" in requirements or "user interface" in requirements:
+            tasks['frontend'].extend(["Design UI", "Develop HTML/CSS/JS"])
+        
+        if "api" in requirements or "backend" in requirements or "server" in requirements:
+            tasks['backend'].extend(["Develop API"])
+        
+        if "database" in requirements or "data storage" in requirements:
+            tasks['database'].extend(["Set up Database", "Design Schema"])
+        
+        if "testing" in requirements or "quality assurance" in requirements or "qa" in requirements:
+            tasks['testing'].extend(["Unit Tests", "Integration Tests"])
+        
+        if "optimization" in requirements or "performance" in requirements or "speed" in requirements:
+            tasks['optimization'].extend(["Optimize Performance", "Code Review"])
+        
+        if "authentication" in requirements or "login" in requirements or "user authentication" in requirements:
+            tasks['backend'].append("Implement Authentication")
+
+        # Logging for debugging purposes
+        self.project_log.append("Dynamic task breakdown complete based on requirements.")
+        print(f"Team Leader: Task breakdown - {tasks}")
+        
         return tasks
 
     def assign_tasks(self, tasks):
